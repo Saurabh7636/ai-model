@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  ollama:
+    build: ollama
+    ports:
+      - 11434:11434
+    volumes:
+      - ai-vol:/ollama
+    networks:
+      - ai-net
+    entrypoint: ["/usr/bin/bash", "/pull-llama3.sh"]
+    deploy:
+      resources:
+        limits:
+          cpus: "5"     # Limit to 5 CPU
+        reservations:
+          cpus: "2"     # Reserve 2 CPU
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - 3000:8080
+    volumes:
+      - open-webui:/app/backend/data
+    networks:
+      - ai-net
+    restart: always
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"     # Limit to 1 CPU
+          memory: "512M"  # Limit to 512MB of memory
+        reservations:
+          cpus: "0.5"     # Reserve 0.5 CPU
+          memory: "256M"  # Reserve 256MB of memory
+
+networks:
+  ai-net:
+    driver: bridge
+
+volumes:
+  ai-vol:
+    driver: local
+  open-webui:
+    driver: local
